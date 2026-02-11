@@ -14,8 +14,10 @@
             --accent-blue: #5d8bff;
             --accent-green: #4ade80;
             --accent-purple: #a78bfa;
+            --accent-yellow: #facc15;
             --border-radius: 10px;
             --shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            --transition: all 0.3s ease;
         }
         
         * {
@@ -32,6 +34,12 @@
             padding: 20px;
             position: relative;
             overflow-x: hidden;
+            transition: var(--transition);
+        }
+        
+        body.modal-open {
+            overflow: hidden;
+            filter: blur(3px);
         }
         
         /* Анимированный фон с цифрами */
@@ -43,7 +51,7 @@
             height: 100%;
             pointer-events: none;
             z-index: -1;
-            opacity: 0.15;
+            opacity: 0.08;
         }
         
         .code-stream {
@@ -51,7 +59,7 @@
             top: -100%;
             color: var(--accent-blue);
             font-family: monospace;
-            font-size: 16px;
+            font-size: 14px;
             white-space: nowrap;
             animation: fall linear infinite;
         }
@@ -123,18 +131,22 @@
             border-left-color: #f87171;
         }
         
-        .notice.solution {
-            border-left-color: var(--accent-green);
+        .notice.warning {
+            border-left-color: var(--accent-yellow);
+            background: rgba(45, 35, 10, 0.8);
         }
         
         .notice-title {
             font-weight: 600;
             margin-bottom: 10px;
             font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
         .problem .notice-title { color: #f87171; }
-        .solution .notice-title { color: var(--accent-green); }
+        .warning .notice-title { color: var(--accent-yellow); }
         
         .students-list {
             display: flex;
@@ -158,7 +170,7 @@
             flex-wrap: wrap;
             gap: 20px;
             box-shadow: var(--shadow);
-            transition: all 0.3s ease;
+            transition: var(--transition);
             position: relative;
             overflow: hidden;
         }
@@ -212,27 +224,6 @@
             font-weight: 600;
         }
         
-        .student-status {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 6px 15px;
-            border-radius: 20px;
-            font-size: 0.95rem;
-            margin-top: 5px;
-            color: var(--text-secondary);
-        }
-        
-        .status-manual {
-            background: rgba(167, 139, 250, 0.2);
-            color: #c4b5fd;
-            border: 1px solid rgba(167, 139, 250, 0.3);
-        }
-        
-        .status-missing {
-            background: rgba(248, 113, 113, 0.15);
-            color: #fca5a5;
-            border: 1px solid rgba(248, 113, 113, 0.3);
-        }
-        
         .student-actions {
             display: flex;
             gap: 15px;
@@ -245,7 +236,7 @@
             border-radius: 8px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.25s ease;
+            transition: var(--transition);
             display: flex;
             align-items: center;
             gap: 10px;
@@ -303,39 +294,94 @@
             transform: translateY(1px);
         }
         
-        .project-details {
-            display: none;
-            padding: 30px;
-            background: var(--bg-tertiary);
-            border-radius: 0 0 var(--border-radius) var(--border-radius);
-            margin-top: 20px;
-            border-top: 1px solid rgba(93, 139, 255, 0.3);
-            animation: slideDown 0.4s ease-out;
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+            margin-top: 50px;
+            border-top: 1px solid rgba(100, 100, 130, 0.3);
+            animation: fadeIn 1.5s ease-out;
         }
         
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-15px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        /* Модальное окно */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
         }
         
-        .project-title {
-            font-size: 1.8rem;
-            margin-bottom: 20px;
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background: var(--bg-secondary);
+            border-radius: var(--border-radius);
+            width: 90%;
+            max-width: 900px;
+            max-height: 85vh;
+            overflow-y: auto;
+            transform: translateY(20px);
+            opacity: 0;
+            transition: transform 0.4s ease, opacity 0.4s ease;
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(93, 139, 255, 0.3);
+            position: relative;
+        }
+        
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .modal-header {
+            padding: 25px;
+            border-bottom: 1px solid rgba(93, 139, 255, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: 2rem;
             color: var(--accent-blue);
             display: flex;
             align-items: center;
             gap: 12px;
         }
         
-        .project-title::before {
-            content: "📁";
-            font-size: 1.6rem;
+        .modal-close {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: rotate(90deg);
+        }
+        
+        .modal-body {
+            padding: 30px;
         }
         
         .project-goal {
@@ -364,7 +410,7 @@
         }
         
         .requirements-title {
-            font-size: 1.4rem;
+            font-size: 1.5rem;
             margin: 25px 0 15px;
             color: var(--accent-purple);
             display: flex;
@@ -382,7 +428,7 @@
         }
         
         .requirements-list li {
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             line-height: 1.6;
             position: relative;
             padding-left: 10px;
@@ -428,16 +474,6 @@
             color: var(--text-secondary);
         }
         
-        footer {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--text-secondary);
-            font-size: 1.05rem;
-            margin-top: 50px;
-            border-top: 1px solid rgba(100, 100, 130, 0.3);
-            animation: fadeIn 1.5s ease-out;
-        }
-        
         @media (max-width: 768px) {
             .student-row {
                 flex-direction: column;
@@ -459,8 +495,9 @@
                 font-size: 2.3rem;
             }
             
-            .project-title {
-                font-size: 1.6rem;
+            .modal-content {
+                width: 95%;
+                margin: 10px;
             }
         }
         
@@ -490,6 +527,10 @@
             .student-name {
                 font-size: 1.3rem;
             }
+            
+            .modal-title {
+                font-size: 1.7rem;
+            }
         }
     </style>
 </head>
@@ -507,328 +548,14 @@
                 <p>Telegram заблокирован Роскомнадзором → файлы с проектами не доходят или загружаются часами → студенты не успевают подготовиться к экзамену</p>
             </div>
             
-            <div class="notice solution">
-                <div class="notice-title">✅ Решение</div>
-                <p>Этот сайт работает без ограничений → мгновенная загрузка архивов → чистый HTML/CSS/JS → никаких зависимостей → просто, быстро и надёжно</p>
+            <div class="notice warning">
+                <div class="notice-title">❗ Внимание</div>
+                <p>У нас есть время до 6 марта. Все сайты — это макеты без JavaScript, так как мы его еще не проходили. Файлы содержат только HTML, CSS и изображения.</p>
             </div>
         </header>
         
-        <div class="students-list">
-            <!-- Студент 1 -->
-            <div class="student-row">
-                <div class="student-info">
-                    <div class="student-number">1</div>
-                    <div>
-                        <div class="student-name">Воротников Макар Владимирович</div>
-                    </div>
-                </div>
-                <div class="student-actions">
-                    <a href="project1.zip" class="btn btn-download" download>Скачать проект</a>
-                    <button class="btn btn-details" onclick="toggleDetails(1)">Подробнее</button>
-                </div>
-                <div id="details-1" class="project-details">
-                    <h3 class="project-title">Онлайн-портфолио дизайнера</h3>
-                    <div class="project-goal">Создать многостраничное портфолио для творческого специалиста с анимированными элементами и адаптивным дизайном</div>
-                    
-                    <h4 class="requirements-title">Особые требования</h4>
-                    <ul class="requirements-list">
-                        <li>Анимированная галерея работ с hover-эффектами</li>
-                        <li>Интерактивное резюме с прогресс-барами навыков</li>
-                        <li>Адаптивное меню-гамбургер</li>
-                        <li>Parallax-эффекты на главной странице</li>
-                        <li>Переключение между светлой и тёмной темой</li>
-                    </ul>
-                    
-                    <div class="technical-requirements">
-                        <h4>Технические требования</h4>
-                        <p>Mobile-first подход, 3+ медиа-запроса (320/768/1200px), 5+ CSS-анимаций, единое меню на всех страницах, формы с HTML5-валидацией, семантическая верстка, оптимизация изображений, ленивая загрузка.</p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Студент 2 -->
-            <div class="student-row">
-                <div class="student-info">
-                    <div class="student-number">2</div>
-                    <div>
-                        <div class="student-name">Клеймёнов Александр Вячеславович</div>
-                    </div>
-                </div>
-                <div class="student-actions">
-                    <a href="project2.zip" class="btn btn-download" download>Скачать проект</a>
-                    <button class="btn btn-details" onclick="toggleDetails(2)">Подробнее</button>
-                </div>
-                <div id="details-2" class="project-details">
-                    <h3 class="project-title">Ресторанный сайт с меню</h3>
-                    <div class="project-goal">Разработать сайт ресторана с онлайн-меню, системой бронирования и адаптивной галереей блюд</div>
-                    
-                    <h4 class="requirements-title">Особые требования</h4>
-                    <ul class="requirements-list">
-                        <li>Интерактивное меню с анимацией добавления в корзину</li>
-                        <li>Система фильтров по категориям и цене</li>
-                        <li>Календарь бронирования (реализованный на CSS)</li>
-                        <li>Parallax-эффекты для разделов сайта</li>
-                        <li>Адаптивные карточки блюд</li>
-                    </ul>
-                    
-                    <div class="technical-requirements">
-                        <h4>Технические требования</h4>
-                        <p>Mobile-first подход, 3+ медиа-запроса (320/768/1200px), 5+ CSS-анимаций, единое меню на всех страницах, формы с HTML5-валидацией, семантическая верстка, оптимизация изображений, ленивая загрузка.</p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Студент 3 -->
-            <div class="student-row">
-                <div class="student-info">
-                    <div class="student-number">3</div>
-                    <div>
-                        <div class="student-name">Климов Илья Владимирович</div>
-                    </div>
-                </div>
-                <div class="student-actions">
-                    <a href="project3.zip" class="btn btn-download" download>Скачать проект</a>
-                    <button class="btn btn-details" onclick="toggleDetails(3)">Подробнее</button>
-                </div>
-                <div id="details-3" class="project-details">
-                    <h3 class="project-title">Фитнес-центр</h3>
-                    <div class="project-goal">Создать сайт фитнес-клуба с интерактивным расписанием, системой записи и анимированными элементами</div>
-                    
-                    <h4 class="requirements-title">Особые требования</h4>
-                    <ul class="requirements-list">
-                        <li>Анимированный таймер обратного отсчёта для акций</li>
-                        <li>Интерактивное расписание с фильтрацией по типу занятий</li>
-                        <li>Прогресс-бары для отображения результатов тренировок</li>
-                        <li>Анимация "пульсации" для кнопок записи</li>
-                        <li>Mobile-first подход с полной адаптацией под мобильные устройства</li>
-                    </ul>
-                    
-                    <div class="technical-requirements">
-                        <h4>Технические требования</h4>
-                        <p>Mobile-first подход, 3+ медиа-запроса (320/768/1200px), 5+ CSS-анимаций, единое меню на всех страницах, формы с HTML5-валидацией, семантическая верстка, оптимизация изображений, ленивая загрузка.</p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Студент 4 - Левенцов (делает вручную) -->
-            <div class="student-row">
-                <div class="student-info">
-                    <div class="student-number">4</div>
-                    <div>
-                        <div class="student-name">Левенцов Никита Сергеевич</div>
-                        <div class="student-status status-manual">Делает проект вручную</div>
-                    </div>
-                </div>
-                <div class="student-actions">
-                    <button class="btn btn-disabled" disabled>Ручная разработка</button>
-                </div>
-            </div>
-            
-            <!-- Студент 5 - Мисюрев (проект отсутствует) -->
-            <div class="student-row">
-                <div class="student-info">
-                    <div class="student-number">5</div>
-                    <div>
-                        <div class="student-name">Мисюрев Сергей Игоревич</div>
-                        <div class="student-status status-missing">Проект отсутствует</div>
-                    </div>
-                </div>
-                <div class="student-actions">
-                    <button class="btn btn-disabled" disabled>Нет проекта</button>
-                </div>
-            </div>
-            
-            <!-- Студент 6 -->
-            <div class="student-row">
-                <div class="student-info">
-                    <div class="student-number">6</div>
-                    <div>
-                        <div class="student-name">Нефедов Иван Сергеевич</div>
-                    </div>
-                </div>
-                <div class="student-actions">
-                    <a href="project6.zip" class="btn btn-download" download>Скачать проект</a>
-                    <button class="btn btn-details" onclick="toggleDetails(6)">Подробнее</button>
-                </div>
-                <div id="details-6" class="project-details">
-                    <h3 class="project-title">Туристическое агентство</h3>
-                    <div class="project-goal">Разработать сайт для поиска и бронирования туров с интерактивной картой и многоэтапной формой бронирования</div>
-                    
-                    <h4 class="requirements-title">Особые требования</h4>
-                    <ul class="requirements-list">
-                        <li>Сложная форма поиска с выпадающими списками и фильтрами</li>
-                        <li>Интерактивная карта направлений туров</li>
-                        <li>Карусель фотографий тура с превью</li>
-                        <li>Многоэтапная форма бронирования (3+ шага)</li>
-                        <li>Адаптивные карточки отелей и туров</li>
-                    </ul>
-                    
-                    <div class="technical-requirements">
-                        <h4>Технические требования</h4>
-                        <p>Mobile-first подход, 3+ медиа-запроса (320/768/1200px), 5+ CSS-анимаций, единое меню на всех страницах, формы с HTML5-валидацией, семантическая верстка, оптимизация изображений, ленивая загрузка.</p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Студент 7 -->
-            <div class="student-row">
-                <div class="student-info">
-                    <div class="student-number">7</div>
-                    <div>
-                        <div class="student-name">Перов Дмитрий Павлович</div>
-                    </div>
-                </div>
-                <div class="student-actions">
-                    <a href="project7.zip" class="btn btn-download" download>Скачать проект</a>
-                    <button class="btn btn-details" onclick="toggleDetails(7)">Подробнее</button>
-                </div>
-                <div id="details-7" class="project-details">
-                    <h3 class="project-title">Сайт архитектурного бюро</h3>
-                    <div class="project-goal">Создать портфолио архитектурных проектов с fullscreen галереей, интерактивными планами и анимированной временной шкалой</div>
-                    
-                    <h4 class="requirements-title">Особые требования</h4>
-                    <ul class="requirements-list">
-                        <li>Fullscreen галерея проектов с плавными переходами</li>
-                        <li>Parallax-эффекты для изображений архитектурных объектов</li>
-                        <li>Анимированная временная шкала процесса работы над проектом</li>
-                        <li>Интерактивные планы помещений с возможностью масштабирования</li>
-                        <li>Сложная адаптивная сетка для отображения проектов</li>
-                    </ul>
-                    
-                    <div class="technical-requirements">
-                        <h4>Технические требования</h4>
-                        <p>Mobile-first подход, 3+ медиа-запроса (320/768/1200px), 5+ CSS-анимаций, единое меню на всех страницах, формы с HTML5-валидацией, семантическая верстка, оптимизация изображений, ленивая загрузка.</p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Студент 8 -->
-            <div class="student-row">
-                <div class="student-info">
-                    <div class="student-number">8</div>
-                    <div>
-                        <div class="student-name">Подгольников Антон Сергеевич</div>
-                    </div>
-                </div>
-                <div class="student-actions">
-                    <a href="project8.zip" class="btn btn-download" download>Скачать проект</a>
-                    <button class="btn btn-details" onclick="toggleDetails(8)">Подробнее</button>
-                </div>
-                <div id="details-8" class="project-details">
-                    <h3 class="project-title">Блог о здоровом образе жизни</h3>
-                    <div class="project-goal">Создать тематический блог с рецептами и статьями, интерактивной формой комментариев и фильтром рецептов</div>
-                    
-                    <h4 class="requirements-title">Особые требования</h4>
-                    <ul class="requirements-list">
-                        <li>Анимированное меню категорий с плавными переходами</li>
-                        <li>Интерактивная форма комментариев с предпросмотром</li>
-                        <li>Фильтр рецептов по ингредиентам и категориям</li>
-                        <li>Адаптивная типографика для комфортного чтения статей</li>
-                        <li>Эффекты появления элементов при прокрутке</li>
-                    </ul>
-                    
-                    <div class="technical-requirements">
-                        <h4>Технические требования</h4>
-                        <p>Mobile-first подход, 3+ медиа-запроса (320/768/1200px), 5+ CSS-анимаций, единое меню на всех страницах, формы с HTML5-валидацией, семантическая верстка, оптимизация изображений, ленивая загрузка.</p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Студент 9 -->
-            <div class="student-row">
-                <div class="student-info">
-                    <div class="student-number">9</div>
-                    <div>
-                        <div class="student-name">Попов Александр Владимирович</div>
-                    </div>
-                </div>
-                <div class="student-actions">
-                    <a href="project9.zip" class="btn btn-download" download>Скачать проект</a>
-                    <button class="btn btn-details" onclick="toggleDetails(9)">Подробнее</button>
-                </div>
-                <div id="details-9" class="project-details">
-                    <h3 class="project-title">Сайт музыкальной группы</h3>
-                    <div class="project-goal">Разработать промо-сайт музыкального коллектива с анимированным аудиоплеером, галереей и интерактивным расписанием концертов</div>
-                    
-                    <h4 class="requirements-title">Особые требования</h4>
-                    <ul class="requirements-list">
-                        <li>Анимированный аудиоплеер (реализованный на CSS)</li>
-                        <li>Галерея с hover-эффектами для фотографий</li>
-                        <li>Интерактивное расписание концертов с фильтрацией</li>
-                        <li>Parallax-эффект на разделе с видео</li>
-                        <li>Адаптивная сетка для фото и видео</li>
-                    </ul>
-                    
-                    <div class="technical-requirements">
-                        <h4>Технические требования</h4>
-                        <p>Mobile-first подход, 3+ медиа-запроса (320/768/1200px), 5+ CSS-анимаций, единое меню на всех страницах, формы с HTML5-валидацией, семантическая верстка, оптимизация изображений, ленивая загрузка.</p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Студент 10 -->
-            <div class="student-row">
-                <div class="student-info">
-                    <div class="student-number">10</div>
-                    <div>
-                        <div class="student-name">Попов Андрей Сергеевич</div>
-                    </div>
-                </div>
-                <div class="student-actions">
-                    <a href="project10.zip" class="btn btn-download" download>Скачать проект</a>
-                    <button class="btn btn-details" onclick="toggleDetails(10)">Подробнее</button>
-                </div>
-                <div id="details-10" class="project-details">
-                    <h3 class="project-title">Платформа для мероприятий</h3>
-                    <div class="project-goal">Создать сайт для поиска и организации событий с календарем, интерактивной картой мест и многоступенчатой формой добавления события</div>
-                    
-                    <h4 class="requirements-title">Особые требования</h4>
-                    <ul class="requirements-list">
-                        <li>Календарь событий с фильтрами по категориям</li>
-                        <li>Анимация счетчика оставшихся билетов</li>
-                        <li>Интерактивная карта мест проведения</li>
-                        <li>Многоступенчатая форма добавления события (3+ шага)</li>
-                        <li>Адаптивные карточки событий для всех устройств</li>
-                    </ul>
-                    
-                    <div class="technical-requirements">
-                        <h4>Технические требования</h4>
-                        <p>Mobile-first подход, 3+ медиа-запроса (320/768/1200px), 5+ CSS-анимаций, единое меню на всех страницах, формы с HTML5-валидацией, семантическая верстка, оптимизация изображений, ленивая загрузка.</p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Студент 11 -->
-            <div class="student-row">
-                <div class="student-info">
-                    <div class="student-number">11</div>
-                    <div>
-                        <div class="student-name">Хлупин Владислав Евгеньевич</div>
-                    </div>
-                </div>
-                <div class="student-actions">
-                    <a href="project11.zip" class="btn btn-download" download>Скачать проект</a>
-                    <button class="btn btn-details" onclick="toggleDetails(11)">Подробнее</button>
-                </div>
-                <div id="details-11" class="project-details">
-                    <h3 class="project-title">Креативное агентство</h3>
-                    <div class="project-goal">Разработать сайт digital-агентства с кейсами, анимацией появления элементов при скролле и интерактивными детализациями проектов</div>
-                    
-                    <h4 class="requirements-title">Особые требования</h4>
-                    <ul class="requirements-list">
-                        <li>Анимация появления элементов при прокрутке страницы</li>
-                        <li>Интерактивные кейсы с возможностью детализации проектов</li>
-                        <li>Эффекты hover для карточек команды агентства</li>
-                        <li>Адаптивные схемы процессов работы</li>
-                        <li>Сложные hover-эффекты для навигации</li>
-                    </ul>
-                    
-                    <div class="technical-requirements">
-                        <h4>Технические требования</h4>
-                        <p>Mobile-first подход, 3+ медиа-запроса (320/768/1200px), 5+ CSS-анимаций, единое меню на всех страницах, формы с HTML5-валидацией, семантическая верстка, оптимизация изображений, ленивая загрузка.</p>
-                    </div>
-                </div>
-            </div>
+        <div class="students-list" id="students-container">
+            <!-- Студенты будут загружены из JSON -->
         </div>
         
         <footer>
@@ -837,9 +564,262 @@
         </footer>
     </div>
     
+    <!-- Модальное окно -->
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modal-project-title">Название проекта</h2>
+                <button class="modal-close" id="modal-close">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <!-- Контент будет загружен динамически -->
+            </div>
+        </div>
+    </div>
+    
     <script>
-        // Генерация анимированного фона с цифрами/кодом
-        document.addEventListener('DOMContentLoaded', () => {
+        // Данные студентов в формате JSON
+        const studentsData = [
+            {
+                id: 1,
+                name: "Воротников Макар Владимирович",
+                downloadLink: "https://github.com/Andrusha-afk/123/raw/refs/heads/main/project1.zip",
+                project: {
+                    title: "Онлайн-портфолио дизайнера",
+                    goal: "Создать многостраничное портфолио для творческого специалиста с анимированными элементами и адаптивным дизайном",
+                    requirements: [
+                        "Анимированная галерея работ с hover-эффектами",
+                        "Интерактивное резюме с прогресс-барами навыков",
+                        "Адаптивное меню-гамбургер",
+                        "Parallax-эффекты на главной странице",
+                        "Переключение между светлой и тёмной темой"
+                    ]
+                }
+            },
+            {
+                id: 2,
+                name: "Клеймёнов Александр Вячеславович",
+                downloadLink: "https://github.com/Andrusha-afk/123/raw/refs/heads/main/project2.zip",
+                project: {
+                    title: "Ресторанный сайт с меню",
+                    goal: "Разработать сайт ресторана с онлайн-меню, системой бронирования и адаптивной галереей блюд",
+                    requirements: [
+                        "Интерактивное меню с анимацией добавления в корзину",
+                        "Система фильтров по категориям и цене",
+                        "Календарь бронирования (реализованный на CSS)",
+                        "Parallax-эффекты для разделов сайта",
+                        "Адаптивные карточки блюд"
+                    ]
+                }
+            },
+            {
+                id: 3,
+                name: "Климов Илья Владимирович",
+                downloadLink: "project3.zip",
+                project: {
+                    title: "Фитнес-центр",
+                    goal: "Создать сайт фитнес-клуба с интерактивным расписанием, системой записи и анимированными элементами",
+                    requirements: [
+                        "Анимированный таймер обратного отсчёта для акций",
+                        "Интерактивное расписание с фильтрацией по типу занятий",
+                        "Прогресс-бары для отображения результатов тренировок",
+                        "Анимация \"пульсации\" для кнопок записи",
+                        "Mobile-first подход с полной адаптацией под мобильные устройства"
+                    ]
+                }
+            },
+            {
+                id: 4,
+                name: "Левенцов Никита Сергеевич",
+                downloadLink: null,
+                project: null
+            },
+            {
+                id: 5,
+                name: "Мисюрев Сергей Игоревич",
+                downloadLink: null,
+                project: null
+            },
+            {
+                id: 6,
+                name: "Нефедов Иван Сергеевич",
+                downloadLink: "project6.zip",
+                project: {
+                    title: "Туристическое агентство",
+                    goal: "Разработать сайт для поиска и бронирования туров с интерактивной картой и многоэтапной формой бронирования",
+                    requirements: [
+                        "Сложная форма поиска с выпадающими списками и фильтрами",
+                        "Интерактивная карта направлений туров",
+                        "Карусель фотографий тура с превью",
+                        "Многоэтапная форма бронирования (3+ шага)",
+                        "Адаптивные карточки отелей и туров"
+                    ]
+                }
+            },
+            {
+                id: 7,
+                name: "Перов Дмитрий Павлович",
+                downloadLink: "project7.zip",
+                project: {
+                    title: "Сайт архитектурного бюро",
+                    goal: "Создать портфолио архитектурных проектов с fullscreen галереей, интерактивными планами и анимированной временной шкалой",
+                    requirements: [
+                        "Fullscreen галерея проектов с плавными переходами",
+                        "Parallax-эффекты для изображений архитектурных объектов",
+                        "Анимированная временная шкала процесса работы над проектом",
+                        "Интерактивные планы помещений с возможностью масштабирования",
+                        "Сложная адаптивная сетка для отображения проектов"
+                    ]
+                }
+            },
+            {
+                id: 8,
+                name: "Подгольников Антон Сергеевич",
+                downloadLink: "project8.zip",
+                project: {
+                    title: "Блог о здоровом образе жизни",
+                    goal: "Создать тематический блог с рецептами и статьями, интерактивной формой комментариев и фильтром рецептов",
+                    requirements: [
+                        "Анимированное меню категорий с плавными переходами",
+                        "Интерактивная форма комментариев с предпросмотром",
+                        "Фильтр рецептов по ингредиентам и категориям",
+                        "Адаптивная типографика для комфортного чтения статей",
+                        "Эффекты появления элементов при прокрутке"
+                    ]
+                }
+            },
+            {
+                id: 9,
+                name: "Попов Александр Владимирович",
+                downloadLink: "project9.zip",
+                project: {
+                    title: "Сайт музыкальной группы",
+                    goal: "Разработать промо-сайт музыкального коллектива с анимированным аудиоплеером, галереей и интерактивным расписанием концертов",
+                    requirements: [
+                        "Анимированный аудиоплеер (реализованный на CSS)",
+                        "Галерея с hover-эффектами для фотографий",
+                        "Интерактивное расписание концертов с фильтрацией",
+                        "Parallax-эффект на разделе с видео",
+                        "Адаптивная сетка для фото и видео"
+                    ]
+                }
+            },
+            {
+                id: 10,
+                name: "Попов Андрей Сергеевич",
+                downloadLink: "project10.zip",
+                project: {
+                    title: "Платформа для мероприятий",
+                    goal: "Создать сайт для поиска и организации событий с календарем, интерактивной картой мест и многоступенчатой формой добавления события",
+                    requirements: [
+                        "Календарь событий с фильтрами по категориям",
+                        "Анимация счетчика оставшихся билетов",
+                        "Интерактивная карта мест проведения",
+                        "Многоступенчатая форма добавления события (3+ шага)",
+                        "Адаптивные карточки событий для всех устройств"
+                    ]
+                }
+            },
+            {
+                id: 11,
+                name: "Хлупин Владислав Евгеньевич",
+                downloadLink: "project11.zip",
+                project: {
+                    title: "Креативное агентство",
+                    goal: "Разработать сайт digital-агентства с кейсами, анимацией появления элементов при скролле и интерактивными детализациями проектов",
+                    requirements: [
+                        "Анимация появления элементов при прокрутке страницы",
+                        "Интерактивные кейсы с возможностью детализации проектов",
+                        "Эффекты hover для карточек команды агентства",
+                        "Адаптивные схемы процессов работы",
+                        "Сложные hover-эффекты для навигации"
+                    ]
+                }
+            }
+        ];
+
+        // Генерация карточек студентов
+        function renderStudents() {
+            const container = document.getElementById('students-container');
+            container.innerHTML = '';
+            
+            studentsData.forEach(student => {
+                const row = document.createElement('div');
+                row.className = 'student-row';
+                
+                const statusText = student.downloadLink ? 
+                    '' : 
+                    (student.id === 4 ? 'Делает проект вручную' : 'Проект отсутствует');
+                
+                row.innerHTML = `
+                    <div class="student-info">
+                        <div class="student-number">${student.id}</div>
+                        <div>
+                            <div class="student-name">${student.name}</div>
+                            ${statusText ? `<div style="color: ${student.id === 4 ? '#c4b5fd' : '#fca5a5'}; margin-top: 5px; font-size: 0.9rem">${statusText}</div>` : ''}
+                        </div>
+                    </div>
+                    <div class="student-actions">
+                        ${student.downloadLink 
+                            ? `
+                                <a href="${student.downloadLink}" class="btn btn-download" download>Скачать проект</a>
+                                ${student.project ? `<button class="btn btn-details" onclick="openModal(${student.id})">Подробнее</button>` : ''}
+                              `
+                            : `<button class="btn btn-disabled" disabled>В разработке</button>`
+                        }
+                    </div>
+                `;
+                
+                container.appendChild(row);
+            });
+        }
+
+        // Модальное окно
+        const modalOverlay = document.getElementById('modal-overlay');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalTitle = document.getElementById('modal-project-title');
+        const modalBody = document.getElementById('modal-body');
+        
+        function openModal(studentId) {
+            const student = studentsData.find(s => s.id === studentId);
+            if (!student || !student.project) return;
+            
+            modalTitle.textContent = student.project.title;
+            
+            modalBody.innerHTML = `
+                <div class="project-goal">${student.project.goal}</div>
+                
+                <h3 class="requirements-title">Особые требования</h3>
+                <ul class="requirements-list">
+                    ${student.project.requirements.map(req => `<li>${req}</li>`).join('')}
+                </ul>
+                
+                <div class="technical-requirements">
+                    <h4>Технические требования</h4>
+                    <p>Mobile-first подход, 3+ медиа-запроса (320/768/1200px), 5+ CSS-анимаций, единое меню на всех страницах, формы с HTML5-валидацией, семантическая верстка, оптимизация изображений, ленивая загрузка.</p>
+                </div>
+            `;
+            
+            modalOverlay.classList.add('active');
+            document.body.classList.add('modal-open');
+        }
+        
+        function closeModal() {
+            modalOverlay.classList.remove('active');
+            document.body.classList.remove('modal-open');
+        }
+        
+        modalCloseBtn.addEventListener('click', closeModal);
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) closeModal();
+        });
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        // Генерация анимированного фона
+        function initBackground() {
             const codeBg = document.getElementById('code-bg');
             const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ{}();:.,"\'-+=*/\\';
             const screenWidth = window.innerWidth;
@@ -849,18 +829,14 @@
                 const stream = document.createElement('div');
                 stream.className = 'code-stream';
                 
-                // Случайная позиция по горизонтали
                 const leftPos = Math.random() * screenWidth;
                 stream.style.left = `${leftPos}px`;
                 
-                // Случайная скорость падения
                 const duration = 15 + Math.random() * 20;
                 const delay = Math.random() * 10;
                 stream.style.animationDuration = `${duration}s`;
                 stream.style.animationDelay = `${delay}s`;
-                stream.style.animationTimingFunction = 'linear';
                 
-                // Генерация строки кода/цифр
                 let codeLine = '';
                 const lineLength = 30 + Math.floor(Math.random() * 40);
                 for (let j = 0; j < lineLength; j++) {
@@ -870,8 +846,10 @@
                 
                 codeBg.appendChild(stream);
             }
-            
-            // Анимация появления карточек студентов
+        }
+
+        // Анимация появления карточек
+        function animateStudents() {
             const studentRows = document.querySelectorAll('.student-row');
             studentRows.forEach((row, index) => {
                 setTimeout(() => {
@@ -884,38 +862,14 @@
                     }, 100);
                 }, 200 + index * 100);
             });
-        });
-        
-        function toggleDetails(id) {
-            const details = document.getElementById(`details-${id}`);
-            if (!details) return;
-            
-            const button = event.target;
-            
-            if (details.style.display === 'block') {
-                details.style.display = 'none';
-                button.textContent = 'Подробнее';
-            } else {
-                // Скрыть все другие открытые детали
-                document.querySelectorAll('.project-details').forEach(detail => {
-                    detail.style.display = 'none';
-                });
-                
-                // Сбросить все кнопки "Подробнее"
-                document.querySelectorAll('.btn-details').forEach(btn => {
-                    btn.textContent = 'Подробнее';
-                });
-                
-                // Показать выбранные детали
-                details.style.display = 'block';
-                button.textContent = 'Скрыть детали';
-                
-                // Плавная прокрутка к открытому блоку
-                setTimeout(() => {
-                    details.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                }, 100);
-            }
         }
+
+        // Инициализация при загрузке
+        document.addEventListener('DOMContentLoaded', () => {
+            initBackground();
+            renderStudents();
+            setTimeout(animateStudents, 300);
+        });
     </script>
 </body>
 </html>
