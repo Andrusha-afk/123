@@ -34,12 +34,16 @@
             padding: 20px;
             position: relative;
             overflow-x: hidden;
-            transition: var(--transition);
+        }
+        
+        /* Блюрим ТОЛЬКО основной контент при открытом модале */
+        body.modal-open > .page-content {
+            filter: blur(4px);
+            transition: filter 0.3s ease;
         }
         
         body.modal-open {
             overflow: hidden;
-            filter: blur(3px);
         }
         
         /* Анимированный фон с цифрами */
@@ -224,10 +228,29 @@
             font-weight: 600;
         }
         
+        .student-status {
+            font-size: 0.95rem;
+            margin-top: 5px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            display: inline-block;
+        }
+        
+        .status-manual {
+            background: rgba(167, 139, 250, 0.2);
+            color: #c4b5fd;
+        }
+        
+        .status-missing {
+            background: rgba(248, 113, 113, 0.15);
+            color: #fca5a5;
+        }
+        
         .student-actions {
             display: flex;
             gap: 15px;
             flex-shrink: 0;
+            flex-wrap: wrap;
         }
         
         .btn {
@@ -243,6 +266,7 @@
             font-size: 1rem;
             position: relative;
             overflow: hidden;
+            white-space: nowrap;
         }
         
         .btn::after {
@@ -304,7 +328,7 @@
             animation: fadeIn 1.5s ease-out;
         }
         
-        /* Модальное окно */
+        /* Модальное окно - ИСПРАВЛЕНО */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -315,7 +339,8 @@
             backdrop-filter: blur(8px);
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start; /* Прижимаем к верху с отступом */
+            padding-top: 50px; /* Отступ сверху */
             z-index: 1000;
             opacity: 0;
             visibility: hidden;
@@ -332,14 +357,16 @@
             border-radius: var(--border-radius);
             width: 90%;
             max-width: 900px;
-            max-height: 85vh;
-            overflow-y: auto;
+            max-height: calc(100vh - 100px); /* Ограничение по высоте с отступами */
+            overflow-y: auto; /* Скролл внутри модалки */
             transform: translateY(20px);
             opacity: 0;
             transition: transform 0.4s ease, opacity 0.4s ease;
             box-shadow: 0 10px 50px rgba(0, 0, 0, 0.6);
             border: 1px solid rgba(93, 139, 255, 0.3);
             position: relative;
+            margin: 0 auto; /* Центрирование по горизонтали */
+            filter: none !important; /* Гарантируем отсутствие блюра */
         }
         
         .modal-overlay.active .modal-content {
@@ -353,6 +380,10 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            position: sticky;
+            top: 0;
+            background: var(--bg-secondary);
+            z-index: 10;
         }
         
         .modal-title {
@@ -373,6 +404,7 @@
             font-size: 1.5rem;
             cursor: pointer;
             transition: var(--transition);
+            flex-shrink: 0;
         }
         
         .modal-close:hover {
@@ -498,6 +530,11 @@
             .modal-content {
                 width: 95%;
                 margin: 10px;
+                max-height: calc(100vh - 60px);
+            }
+            
+            .modal-overlay {
+                padding-top: 20px;
             }
         }
         
@@ -531,40 +568,47 @@
             .modal-title {
                 font-size: 1.7rem;
             }
+            
+            .modal-body {
+                padding: 20px;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Анимированный фон с цифрами/кодом -->
-    <div class="code-bg" id="code-bg"></div>
-    
-    <div class="container">
-        <header>
-            <h1>Экзаменационные проекты по веб-разработке</h1>
-            <p class="subtitle">Официальный портал для получения экзаменационных заданий студентами Топ Академии. Из-за блокировки Telegram РКН все проекты доступны здесь для мгновенной загрузки.</p>
-            
-            <div class="notice problem">
-                <div class="notice-title">⚠️ Проблема</div>
-                <p>Telegram заблокирован Роскомнадзором → файлы с проектами не доходят или загружаются часами → студенты не успевают подготовиться к экзамену</p>
-            </div>
-            
-            <div class="notice warning">
-                <div class="notice-title">❗ Внимание</div>
-                <p>У нас есть время до 6 марта. Все сайты — это макеты без JavaScript, так как мы его еще не проходили. Файлы содержат только HTML, CSS и изображения.</p>
-            </div>
-        </header>
+    <!-- Обертка для основного контента (для корректного блюра) -->
+    <div class="page-content">
+        <!-- Анимированный фон с цифрами/кодом -->
+        <div class="code-bg" id="code-bg"></div>
         
-        <div class="students-list" id="students-container">
-            <!-- Студенты будут загружены из JSON -->
+        <div class="container">
+            <header>
+                <h1>Экзаменационные проекты по веб-разработке</h1>
+                <p class="subtitle">Официальный портал для получения экзаменационных заданий студентами Топ Академии. Из-за блокировки Telegram РКН все проекты доступны здесь для мгновенной загрузки.</p>
+                
+                <div class="notice problem">
+                    <div class="notice-title">⚠️ Проблема</div>
+                    <p>Telegram заблокирован Роскомнадзором → файлы с проектами не доходят или загружаются часами → студенты не успевают подготовиться к экзамену</p>
+                </div>
+                
+                <div class="notice warning">
+                    <div class="notice-title">❗ Внимание</div>
+                    <p>У нас есть время до 6 марта. Все сайты — это макеты без JavaScript, так как мы его еще не проходили. Файлы содержат только HTML, CSS и изображения.</p>
+                </div>
+            </header>
+            
+            <div class="students-list" id="students-container">
+                <!-- Студенты будут загружены из JSON -->
+            </div>
+            
+            <footer>
+                <p>Экзаменационный портал по веб-разработке • Топ Академия • 2026</p>
+                <p>Все проекты соответствуют техническим требованиям из задания</p>
+            </footer>
         </div>
-        
-        <footer>
-            <p>Экзаменационный портал по веб-разработке • Топ Академия • 2026</p>
-            <p>Все проекты соответствуют техническим требованиям из задания</p>
-        </footer>
     </div>
     
-    <!-- Модальное окно -->
+    <!-- Модальное окно (ВНЕ обертки основного контента) -->
     <div class="modal-overlay" id="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
@@ -741,26 +785,37 @@
                 const row = document.createElement('div');
                 row.className = 'student-row';
                 
-                const statusText = student.downloadLink ? 
-                    '' : 
-                    (student.id === 4 ? 'Делает проект вручную' : 'Проект отсутствует');
+                // Статус для особых случаев
+                let statusHTML = '';
+                if (student.id === 4) {
+                    statusHTML = `<div class="student-status status-manual">Делает проект вручную</div>`;
+                } else if (!student.downloadLink && student.project) {
+                    statusHTML = `<div class="student-status status-missing">Проект в разработке</div>`;
+                }
+                
+                // Формируем кнопки: всегда показываем "Подробнее" если есть проект
+                let buttonsHTML = '';
+                if (student.downloadLink) {
+                    buttonsHTML += `<a href="${student.downloadLink}" class="btn btn-download" download>Скачать проект</a>`;
+                } else if (student.project) {
+                    buttonsHTML += `<button class="btn btn-disabled" disabled>В разработке</button>`;
+                }
+                
+                // Кнопка "Подробнее" для всех у кого есть проект
+                if (student.project) {
+                    buttonsHTML += `<button class="btn btn-details" onclick="openModal(${student.id})">Подробнее</button>`;
+                }
                 
                 row.innerHTML = `
                     <div class="student-info">
                         <div class="student-number">${student.id}</div>
                         <div>
                             <div class="student-name">${student.name}</div>
-                            ${statusText ? `<div style="color: ${student.id === 4 ? '#c4b5fd' : '#fca5a5'}; margin-top: 5px; font-size: 0.9rem">${statusText}</div>` : ''}
+                            ${statusHTML}
                         </div>
                     </div>
                     <div class="student-actions">
-                        ${student.downloadLink 
-                            ? `
-                                <a href="${student.downloadLink}" class="btn btn-download" download>Скачать проект</a>
-                                ${student.project ? `<button class="btn btn-details" onclick="openModal(${student.id})">Подробнее</button>` : ''}
-                              `
-                            : `<button class="btn btn-disabled" disabled>В разработке</button>`
-                        }
+                        ${buttonsHTML}
                     </div>
                 `;
                 
@@ -796,6 +851,10 @@
             
             modalOverlay.classList.add('active');
             document.body.classList.add('modal-open');
+            
+            // Прокрутка модалки вверх при открытии
+            const modalContent = modalOverlay.querySelector('.modal-content');
+            modalContent.scrollTop = 0;
         }
         
         function closeModal() {
